@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CS180 Project 1</title>
+        <style>
+            .container {
+                display: flex;
+                flex-direction: column;
+                margin: 0% 5% 0% 5%;
+            }
+            .image-container {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin: 0% 10% 0% 10%;
+            }
+            h3 {
+                font-size: 135%;
+            }
+            p {
+                font-size: 130%;
+            }
+            .img-large {
+                width: 475px;
+                height: 400px;
+            }
+            .figcaption-small {
+                text-align: center;
+            }
+            .figcaption-large {
+                text-align: center;
+                width: 475px;
+            }
+        </style>
+    </head>
+
+    <body style="background-color: slategray">
+        <div class="container">
+            <div>
+                <h1>
+                    Images of the Russian Empire: Colorizing the
+                    Prokudin-Gorskii Photo Collection
+                </h1>
+                <h3>By Jay Ni</h3>
+                <h2>Overview</h2>
+                <p>
+                    The main goal of this project is to implement an algorithm
+                    that will turn the digitized Prokudin-Gorskii glass plate
+                    images into color images. For all images, they are first
+                    extracted into the three respective color channels R, G, and
+                    B. Then, the R and G images are aligned to the B image via
+                    the Sum of Squared Differences (SSD) scoring metric. The
+                    best displacement is one with the lowest SSD. Finally, the
+                    three images are stacked on top of each other to produce a
+                    single full color image. All displacements are shown in the
+                    form (dx, dy).
+                </p>
+                <hr />
+            </div>
+
+            <div>
+                <h2>Part 1: Small Images and the Naive Algorithm</h2>
+                <p>
+                    For the three given small images an exhaustive search over a
+                    [15, -15] pixel window was performed. For each displacement,
+                    the SSD calculation was done over the middle 80% of pixels
+                    in order to eliminate noise from the borders. Below are the
+                    resulting images and the respective displacements vector
+                    applied.
+                </p>
+                <div class="image-container">
+                    <figure>
+                        <img src="./images/cathedral_combined.jpg" />
+                        <figcaption class="figcaption-small">
+                            Cathedral
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            R (3, 12)
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            G (2, 5)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./images/monastery_combined.jpg" />
+                        <figcaption class="figcaption-small">
+                            Monastery
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            R (2, 3)
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            G (2, -3)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./images/tobolsk_combined.jpg" />
+                        <figcaption class="figcaption-small">
+                            Tobolsk
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            R (3, 6)
+                        </figcaption>
+                        <figcaption class="figcaption-small">
+                            G (3, 3)
+                        </figcaption>
+                    </figure>
+                </div>
+                <hr />
+            </div>
+
+            <div>
+                <h2>
+                    Part 2: Large Images and the Image Pyramid Search Algorithm
+                </h2>
+                <p>
+                    For the large images, an exhaustive search over a [-15, 15]
+                    pixel window was too expensive and inefficient. The
+                    implementation of an image pyramid allowed for a recursive
+                    coarse to fine displacement search. The original image was
+                    shrunk by a factor of 2 repeatedly until it was less than
+                    100x100 pixels. Each layer uses the best estimate from the
+                    previous lower resolution level as the search starting
+                    point. Additionally, the search window was shrunk to [-3, 3]
+                    pixels per level. This provided a substantial speedup to the
+                    program while still maintaining very good accuracy, since
+                    the image pyramid allows us to search through multiple [-3,
+                    3] windows throughout the image.
+                </p>
+                <br />
+                <p>
+                    Additionally, before doing any alignment, I manually removed
+                    250 pixels off all sides for each image in order to
+                    eliminate noise from the borders. For each displacement, the
+                    SSD calculation was done over the middle 90% of pixels to
+                    avoid noise from np.roll() sending pixels on the left to the
+                    right or from the top to the bottom. Below are the results
+                    and the respective displacement vectors applied.
+                </p>
+                <div class="image-container">
+                    <figure>
+                        <img
+                            src="./images/church_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Church</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (-4, 58)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (4, 25)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/harvesters_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Harvesters
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (14, 124)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (17, 60)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/icon_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Icon</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (23, 90)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (17, 41)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/lady_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Lady</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (12, 112)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (8, 56)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/melons_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Melons</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (14, 178)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (10, 82)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/onion_church_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Onion Church
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (36, 108)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (26, 52)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/sculpture_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Sculpture
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (-27, 140)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (-11, 33)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/self_portrait_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Self Portrait
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (37, 176)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (29, 79)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/three_generations_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Three Generations
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (11, 112)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (14, 53)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/train_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Train</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (32, 87)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (6, 42)
+                        </figcaption>
+                    </figure>
+                </div>
+                <h3>Part 2.1: Extra Images</h3>
+                <p>
+                    These images were not included in the given samples and
+                    downloaded from the online Prokudin-Gorskii collection.
+                </p>
+                <div class="image-container">
+                    <figure>
+                        <img
+                            src="./images/flowers_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Flowers
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (-24, 96)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (-6, 50)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/bridge_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Bridge</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (-35, 97)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (-8, 43)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/vases_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">Vases</figcaption>
+                        <figcaption class="figcaption-large">
+                            R (8, 110)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (5, 24)
+                        </figcaption>
+                    </figure>
+                </div>
+                <h3>Part 2.2: Emir</h3>
+                <p>
+                    Despite working for all other images, the algorithm would
+                    produce a slightly malaligned result for Emir. To solve this
+                    problem, I aligned the B and G channels to R instead. This
+                    produced a satisfying result.
+                </p>
+                <div class="image-container">
+                    <figure>
+                        <img
+                            src="./images/emir_bad_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Emir Before
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            R (43, 72)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (24, 49)
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/emir_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Emir After
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            B (-56, -104)
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            G (-17, -57)
+                        </figcaption>
+                    </figure>
+                </div>
+                <hr />
+            </div>
+            <div>
+                <h2>Part 3: Bells and Whistles</h2>
+                <h3>Part 3.1: Auto-Contrast</h3>
+                <p>
+                    To contrast the images, I applied histogram equalization to
+                    all three color channels separately before combining them
+                    together. I only used the middle 90% of each respective
+                    image to apply the histogram to remove noise from borders.
+                </p>
+                <div class="image-container">
+                    <figure>
+                        <img
+                            src="./images/church_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Church Before Auto-Contrast
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/church_contrasted_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Church After Auto-Contrast
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            The sky and water look almost painting-esq, while
+                            the side of the church facing sunlight got brighter
+                            and the shaded area got darker.
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/harvesters_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Harvesters Before Auto-Contrast
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/harvesters_contrasted_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Harvesters After Auto-Contrast
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            The plants look greener and more natural. Overall
+                            the yellowish hue from the pre-contrasted image is
+                            removed.
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/icon_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Icon Before Auto-Contrast
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/icon_contrasted_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Icon After Auto-Contrast
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            Overall the details look nicer. The blue door on the
+                            right stands out more. Like Harvesters, the
+                            yellowish hue from the pre-contrasted image is
+                            removed.
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/lady_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Lady Before Auto-Contrast
+                        </figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="./images/lady_contrasted_combined.jpg"
+                            class="img-large"
+                        />
+                        <figcaption class="figcaption-large">
+                            Lady After Auto-Contrast
+                        </figcaption>
+                        <figcaption class="figcaption-large">
+                            While the reddish background is now gray which makes
+                            the lady and her hair stand out nicely, the
+                            auto-contrast removed the details in her shirt, such
+                            as the creases and patterns on the sleeve. Also, her
+                            left arm is a bit indistinguishable from the shirt.
+                            Not a strict upgrade.
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
